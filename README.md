@@ -24,8 +24,8 @@ To launch this repo on binder, you can use the badge above to launch the lab. Yo
 
 Note that the launch process can be slow at times: if the repo has been recently changed and you are the first one use it then the docker images may have to be built. Even if the docker images are available, it may take a moment to transfer the required images to the [federation server][binderfed]
 
-[binderlab]:https://mybinder.org/v2/gh/topazeblue/carbon-simulator-binder/main
-[binderlab_lpex]:https://mybinder.org/v2/gh/topazeblue/carbon-simulator-binder/main?labpath=CarbonSim-LitepaperExamples.ipynb
+[binderlab]:https://mybinder.org/v2/gh/bancorprotocol/carbon-simulator-binder/main
+[binderlab_lpex]:https://mybinder.org/v2/gh/bancorprotocol/carbon-simulator-binder/main?labpath=CarbonSim-LitepaperExamples.ipynb
 
 
 ## Local usage 
