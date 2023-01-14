@@ -4,12 +4,48 @@
 
 # Carbon Simulator for Binder
 
+_requires Carbon Version v2.1_
+
 [![PyPI version](https://badge.fury.io/py/carbon-simulator.svg)](https://badge.fury.io/py/carbon-simulator)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Binder](https://img.shields.io/badge/binder-main-blue)][binderlab]
+[![Binder](https://img.shields.io/badge/binder-beta-blue)][binderlabbeta]
+
 
 
 This is the [Binder][binder] repo for the [Carbon simulator][repo]. The permament github URL for this repo is [bancorprotocol/carbon-simulator-binder][repob]. Please refer to the simulator repo at [bancorprotocol/carbon-simulator][repo] and the Carbon project website [carbondefi.xyz][carbon] for more information. On the site you will find in particular the [litepaper][litepaper], [whitepaper][whitepaper] and the [patent application][patent]. 
+
+## Repo Structure
+
+This repo contains a collection of Jupyter notebooks related to the Carbon Simulator. Whilst most notebooks should be working, there may be two issues aring: firstly, some notebooks may be very old and may not have been updated to use the latest version of Carbon and there are breaking changes. Secondly, the notebook may be too new and rely on Carbon code that is currently in the beta branch, and when run on Binder it is only possibly to run the code that is currently in the main branch.
+
+The notebooks are arranged according to the following categories
+
+- `CarbonExamples`: the example workbooks from the root directory of the Carbon repo
+- `CarbonDemo`: the demo workbooks from `resources/demo` of the Carbon repo
+- `CarbonNBTest`: the test workbooks from `resources/nbtest` of the Carbon repo
+- `Examples`: other examples not present in the Carbon repo
+
+## Quickstart
+
+**Either** use the [![Binder](https://img.shields.io/badge/binder-main-blue)][binderlab] button above to launch the generic repo and navigate to the workbook you want from within the user environment,
+
+**or** go to the file directly using the url
+
+    https://mybinder.org/v2/gh/bancorprotocol/carbon-simulator-binder/main?labpath=PATH/BOOK.ipynb
+
+where you should replace `PATH` and `BOOK` in
+
+    ...?labpath=PATH/BOOK.ipynb
+
+with the desired _path_ and _notebook name_.
+
+A couple of example URLs you can follow are below:
+
+- [...?labpath=CarbonSim-LitepaperExamples.ipynb](https://mybinder.org/v2/gh/bancorprotocol/carbon-simulator-binder/main?labpath=CarbonSim-LitepaperExamples.ipynb)
+- [...?labpath=Examples/202301_ExpandingRanges.ipynb](https://mybinder.org/v2/gh/bancorprotocol/carbon-simulator-binder/main?labpath=Examples/202301_ExpandingRanges.ipynb)
+- [...?labpath=CarbonDemo/CarbonSim-Demo-1-1.ipynb](https://mybinder.org/v2/gh/bancorprotocol/carbon-simulator-binder/main?labpath=CarbonDemo/CarbonSim-Demo-1-1.ipynb)
+
 
 ## Usage
 
@@ -25,6 +61,7 @@ To launch this repo on binder, you can use the badge above to launch the lab. Yo
 Note that the launch process can be slow at times: if the repo has been recently changed and you are the first one use it then the docker images may have to be built. Even if the docker images are available, it may take a moment to transfer the required images to the [federation server][binderfed]
 
 [binderlab]:https://mybinder.org/v2/gh/bancorprotocol/carbon-simulator-binder/main
+[binderlabbeta]:https://mybinder.org/v2/gh/bancorprotocol/carbon-simulator-binder/beta
 [binderlab_lpex]:https://mybinder.org/v2/gh/bancorprotocol/carbon-simulator-binder/main?labpath=CarbonSim-LitepaperExamples.ipynb
 
 
