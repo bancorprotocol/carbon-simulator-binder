@@ -4,12 +4,13 @@
 
 # Carbon Simulator for Binder
 
-_requires Carbon Version v2.1_
+_requires Carbon Version v2.2_
 
 [![PyPI version](https://badge.fury.io/py/carbon-simulator.svg)](https://badge.fury.io/py/carbon-simulator)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Binder](https://img.shields.io/badge/binder-main-blue)][binderlab]
 [![Binder](https://img.shields.io/badge/binder-beta-blue)][binderlabbeta]
+[![Binder](https://img.shields.io/badge/binder-frozen-blue)][binderlabfrozen]
 
 
 
@@ -25,6 +26,9 @@ The notebooks are arranged according to the following categories
 - `CarbonDemo`: the demo workbooks from `resources/demo` of the Carbon repo
 - `CarbonNBTest`: the test workbooks from `resources/nbtest` of the Carbon repo
 - `Examples`: other examples not present in the Carbon repo
+- `Frozen`: the notebooks in the dated folders will usually not be updated; in 
+conjunction with a frozen branch this avoids having to rebuild the binder too
+often, in particular just ahead of an event
 
 ## Quickstart
 
@@ -62,6 +66,7 @@ Note that the launch process can be slow at times: if the repo has been recently
 
 [binderlab]:https://mybinder.org/v2/gh/bancorprotocol/carbon-simulator-binder/main
 [binderlabbeta]:https://mybinder.org/v2/gh/bancorprotocol/carbon-simulator-binder/beta
+[binderlabfrozen]:https://mybinder.org/v2/gh/bancorprotocol/carbon-simulator-binder/frozen
 [binderlab_lpex]:https://mybinder.org/v2/gh/bancorprotocol/carbon-simulator-binder/main?labpath=CarbonSim-LitepaperExamples.ipynb
 
 
