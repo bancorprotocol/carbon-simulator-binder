@@ -4,4 +4,5 @@ matplotlib
 tabulate
 sympy
 scipy
+pyyaml
 carbon-simulator
