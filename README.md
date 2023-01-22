@@ -66,7 +66,7 @@ Note that the launch process can be slow at times: if the repo has been recently
 
 [binderlab]:https://mybinder.org/v2/gh/bancorprotocol/carbon-simulator-binder/main
 [binderlabbeta]:https://mybinder.org/v2/gh/bancorprotocol/carbon-simulator-binder/beta
-[binderlabfrozen]:https://mybinder.org/v2/gh/bancorprotocol/carbon-simulator-binder/frozen
+[binderlabfrozen]:https://mybinder.org/v2/gh/bancorprotocol/carbon-simulator-binder/frozen_yyyymmdd
 [binderlab_lpex]:https://mybinder.org/v2/gh/bancorprotocol/carbon-simulator-binder/main?labpath=CarbonSim-LitepaperExamples.ipynb
 
 
