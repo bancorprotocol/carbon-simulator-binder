@@ -1,6 +1,6 @@
 name: python 3.8
 dependencies:
-  - python=3.8
+  - python=3.8.15
   - pip
   - pip:
     - -r requirements.txt
