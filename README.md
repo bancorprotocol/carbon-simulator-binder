@@ -4,13 +4,12 @@
 
 # Carbon Simulator for Binder
 
-_requires Carbon Version v2.2_
+_see [`FROZEN.md`][frozenmd] for a table of frozen Binder releases_
 
+[frozenmd]:https://github.com/bancorprotocol/carbon-simulator-binder/blob/main/FROZEN.md
 [![PyPI version](https://badge.fury.io/py/carbon-simulator.svg)](https://badge.fury.io/py/carbon-simulator)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Binder](https://img.shields.io/badge/binder-main-blue)][binderlab]
-[![Binder](https://img.shields.io/badge/binder-beta-blue)][binderlabbeta]
-[![Binder](https://img.shields.io/badge/binder-frozen-blue)][binderlabfrozen]
 
 
 
