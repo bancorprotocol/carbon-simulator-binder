@@ -76,7 +76,7 @@ except:
     output_w()
 
 # ### The source data collection (filename) and columns (data series)
-# filename determines collection, eg `RAN-050-00` is sig=50% vol and mu=0% drift; see available collections in dropdown
+# filename determines collection, eg `RAN-050-00` is sig=50% vol and mu=0% drift, and `BTC-COINS` is a collection of coins with prices expressted in BTC. If you change the top dropdown, Run All to update the bottom one.
 
 DATAPATH = "../data"
 try:
@@ -87,7 +87,7 @@ except:
 
 cols = tuple(pdcols(j(DATAPATH, f"{datafn_w.value}.pickle")))
 try:
-    assert datafn_w.value1 == old_datafn_w_value
+    assert datafn_w.value == old_datafn_w_value
     datacols_w()
 except:
     old_datafn_w_value = datafn_w.value
@@ -130,15 +130,15 @@ except:
 
 # ### The `slider` strategy
 #
-# This is the strategy called `slider`. Here `m` is the mid price of the range (adjust `S0`, `SMIN`, `SMAX` to change), `g%` is the gap between the ranges in percent, and `w%` is the width of the ranges in percent. The parameter `u%` is the range utilisation rate, where `u=0%` means the range is full, and `u~100%` means that it is almost empty. The parameter `csh:rsk` is the initial cash ratio (where 0% means all rsk, 100% all csh, and 50% even split). Total cash value of the initial portfolio is `TVL`.
+# This is the strategy called `slider`. Here `m` is the mid price of the range (adjust `S0`, `SMIN`, `SMAX` to change), `g%` is the gap between the ranges in percent, and `w%` is the width of the ranges in percent. The parameter `u%` is the range utilisation rate, where `u=0%` means the range is full, and `u~100%` means that it is almost empty. The parameter `csh` is the initial cash percenate of the portfolio, and it total cash value is `TVL`.
 
 try:
     strat1_w(vertical=True)
 except:
-    S0, SMIN, SMAX, TVL = 100, 50, 150, 1000
-    strat1_w = PcSliderManager(["m", "g%", "w%", "u%", "csh:rsk"], 
+    S0, SMIN, SMAX, TVL = 100, 50, 200, 1000
+    strat1_w = PcSliderManager(["m", "g%", "w%", "u%", "csh"], 
                         values=[S0/100, 0.1, 0.25, 0, 0.5], 
-                        range=[(SMIN/100,SMAX/100),(0,0.25),(0,0.25),(0,1),(0,1)])
+                        range=[(SMIN/100,SMAX/100),(0,0.50),(0,0.50),(0,1),(0,1)])
     strat1_w(vertical=True)
 
 # ## Simulation
