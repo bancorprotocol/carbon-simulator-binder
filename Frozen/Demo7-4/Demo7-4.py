@@ -15,7 +15,7 @@
 
 # +
 from carbon.helpers.stdimports import *
-from carbon.helpers import j, strategy, pdread, pdcols, Params, fsave, listdir
+from carbon.helpers import j, strategy, pdread, pdcols, fsave, listdir, Params
 from carbon.helpers.widgets import CheckboxManager, DropdownManager, PcSliderManager
 from carbon.helpers.simulation import run_sim, plot_sim, SIM_DEFAULT_PARAMS
 
@@ -25,7 +25,7 @@ print_version(require="2.2.4")
 # -
 
 # # Carbon Simulation - Demo 7-4 
-# _[frozen_20230124][frozen]: this notebook on [Binder][frozen_nb] and on [github][frozen_gh]_
+# _[frozen_20230127][frozen]: this notebook on [Binder][frozen_nb] and on [github][frozen_gh]_
 #
 # Use **Run -- Run All Cells** in the menu above to run the notebook, then adjust the simulation parameters using the widgets provided. You can find **further usage instructions at the end of this notebook**, and throughout the notebook.
 #
@@ -35,11 +35,15 @@ print_version(require="2.2.4")
 # [simpypi]:https://pypi.org/project/carbon-simulator/
 # [repo]:https://github.com/bancorprotocol/carbon-simulator
 # [repob]:https://github.com/bancorprotocol/carbon-simulator-binder
-# [frozen]:https://mybinder.org/v2/gh/bancorprotocol/carbon-simulator-binder/frozen_20230124
-# [frozen_nb]:https://mybinder.org/v2/gh/bancorprotocol/carbon-simulator-binder/frozen_20230124?labpath=Frozen%2FDemo7-4%2FDemo7-4.ipynb
+# [frozen]:https://mybinder.org/v2/gh/bancorprotocol/carbon-simulator-binder/frozen_20230127
+# [frozen_nb]:https://mybinder.org/v2/gh/bancorprotocol/carbon-simulator-binder/frozen_20230127?labpath=Frozen%2FDemo7-4%2FDemo7-4.ipynb
 # [frozen_gh]:https://github.com/bancorprotocol/carbon-simulator-binder/blob/main/Frozen/Demo7-4/Demo7-4.ipynb
 
 # ## Setup
+
+# remove at next update
+sim_params = SIM_DEFAULT_PARAMS.params
+sim_params["plotValueCsh"] = True
 
 # ### Type and destination of generated output
 #
@@ -86,7 +90,7 @@ try:
     datacols_w(vertical=False)
 except:
     old_datafn_w_value = datafn_w.value
-    COL0, NCOLS, NCCOLS = 0, min(20, len(cols)), 3
+    COL0, NCOLS, NCCOLS = 0, min(20, len(cols)), 4
     try:
         datacols_w = CheckboxManager(cols[COL0:COL0+NCOLS], values=NCCOLS*[True]+(NCOLS-NCCOLS)*[False])
     except:
@@ -111,7 +115,7 @@ except:
                     strategy.from_mgw(m=100, g=0.20, w=0.1,  amt_rsk=1, amt_csh=0)],  
          "uv3":     strategy.from_u3(p_lo=100, p_hi=150, start_below=True, fee_pc=0.05, tvl_csh=1000),
     }
-    strats_w = CheckboxManager(strats.keys(), values=[1,0,0,0,1,0,0])
+    strats_w = CheckboxManager(strats.keys(), values=[1,0,0,0,0,0,0])
     #strats_w = CheckboxManager(strats.keys(), values=[1,0,0,0,0,0,0])
     #strats_w = CheckboxManager(strats.keys(), values=[0,0,0,0,0,0,1])
     strats_w(vertical=False)
@@ -123,7 +127,7 @@ except:
 try: 
     params_w(vertical=False)
 except:
-    params_w = CheckboxManager.from_idvdct(SIM_DEFAULT_PARAMS.params)
+    params_w = CheckboxManager.from_idvdct(sim_params)
     params_w(vertical=False)
 
 # ### Time period
@@ -139,13 +143,13 @@ except:
 
 # ### The `slider` strategy
 #
-# This is the strategy called `slider`. Here `m` is the mid price of the range (adjust `S0`, `SMIN`, `SMAX` to change), `g%` is the gap between the ranges in percent, and `w%` is the width of the ranges in percent. The parameter `u%` is the range utilisation rate, where `u=0%` means the range is full, and `u~100%` means that it is almost empty. The parameter `rsk:csh` is the initial risk/cash ratio (where 0% means all csh, 100% all rsk, and 50% even split). Total cash value of the initial portfolio is `TVL` and the reference price is `SREF`.
+# This is the strategy called `slider`. Here `m` is the mid price of the range (adjust `S0`, `SMIN`, `SMAX` to change), `g%` is the gap between the ranges in percent, and `w%` is the width of the ranges in percent. The parameter `u%` is the range utilisation rate, where `u=0%` means the range is full, and `u~100%` means that it is almost empty. The parameter `csh:rsk` is the initial cash ratio (where 0% means all rsk, 100% all csh, and 50% even split). Total cash value of the initial portfolio is `TVL`.
 
 try:
     strat1_w(vertical=True)
 except:
-    S0, SMIN, SMAX, TVL, SREF = 100, 50, 150, 1000, 100
-    strat1_w = PcSliderManager(["m", "g%", "w%", "u%", "rsk:csh"], 
+    S0, SMIN, SMAX, TVL = 100, 50, 150, 1000
+    strat1_w = PcSliderManager(["m", "g%", "w%", "u%", "csh:rsk"], 
                         values=[S0/100, 0.1, 0.25, 0, 0.5], 
                         range=[(SMIN/100,SMAX/100),(0,0.25),(0,0.25),(0,1),(0,1)])
     strat1_w(vertical=True)
@@ -162,11 +166,11 @@ if output_w.values[3]:
 DATAID, DATAFN = datafn_w.value, j(DATAPATH, f"{datafn_w.value}.pickle") 
 OUTPATH = outpath_w.value if output_w.values[0] else None
 STARTPC, LENPC, SV = segment_w.values[0], segment_w.values[1], strat1_w.values
-strats["slider"] = strategy.from_mgw(m=100*SV[0], g=SV[1], w=SV[2], u=SV[3], amt_rsk=TVL/SREF*SV[4], amt_csh=TVL*(1-SV[4]))
 for colnm in datacols_w.checked:
+    path = pdread(DATAFN, colnm, from_pc=STARTPC, period_pc=LENPC, min_dt=PATH_MIN_DATE)
+    strats["slider"] = strategy.from_mgw(m=100*SV[0], g=SV[1], w=SV[2], u=SV[3], amt_rsk=TVL/path[0]*(1-SV[4]), amt_csh=TVL*SV[4])
     for ix, stratid in enumerate(strats_w.checked):
         strat = strats[stratid]
-        path = pdread(DATAFN, colnm, from_pc=STARTPC, period_pc=LENPC, min_dt=PATH_MIN_DATE)
         simresults = run_sim(strat, path)
         plot_sim(simresults, f"{DATAID}:{colnm}", Params(**params_w.values_dct))
         if isinstance(OUTPATH, str):
