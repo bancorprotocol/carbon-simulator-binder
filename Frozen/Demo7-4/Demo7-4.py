@@ -86,16 +86,12 @@ except:
 
 cols = tuple(pdcols(j(DATAPATH, f"{datafn_w.value}.pickle")))
 try:
-    assert datafn_w.value == old_datafn_w_value
-    datacols_w(vertical=False)
+    assert datafn_w.value1 == old_datafn_w_value
+    datacols_w()
 except:
     old_datafn_w_value = datafn_w.value
-    COL0, NCOLS, NCCOLS = 0, min(20, len(cols)), 4
-    try:
-        datacols_w = CheckboxManager(cols[COL0:COL0+NCOLS], values=NCCOLS*[True]+(NCOLS-NCCOLS)*[False])
-    except:
-        datacols_w = CheckboxManager(cols, values=[1,]+[0,]*(len(cols)-1))
-    datacols_w(vertical=False)
+    datacols_w = DropdownManager(cols)
+    datacols_w()
 
 # ### Strategies
 #
@@ -125,10 +121,10 @@ except:
 # ### Elements to show on the chart
 
 try: 
-    params_w(vertical=False)
+    params_w(vertical=True)
 except:
     params_w = CheckboxManager.from_idvdct(sim_params)
-    params_w(vertical=False)
+    params_w(vertical=True)
 
 # ### Time period
 #
@@ -157,25 +153,21 @@ except:
 # ## Simulation
 
 if output_w.values[3]:
-    print("CLEARING OUT PREVIOUS FILES [UNCHECK BOX ABOVE TO DISABLE]")
     # !rm {OUTPATH}/*.png
-    # !rm {OUTPATH}/_CHARTS.zip
-    # !rm {OUTPATH}/_CHARTS.md
-    # !rm {OUTPATH}/_CHARTS.docx
+    # !rm {OUTPATH}/_CHARTS.*
 
 DATAID, DATAFN = datafn_w.value, j(DATAPATH, f"{datafn_w.value}.pickle") 
 OUTPATH = outpath_w.value if output_w.values[0] else None
-STARTPC, LENPC, SV = segment_w.values[0], segment_w.values[1], strat1_w.values
-for colnm in datacols_w.checked:
-    path = pdread(DATAFN, colnm, from_pc=STARTPC, period_pc=LENPC, min_dt=PATH_MIN_DATE)
-    strats["slider"] = strategy.from_mgw(m=100*SV[0], g=SV[1], w=SV[2], u=SV[3], amt_rsk=TVL/path[0]*(1-SV[4]), amt_csh=TVL*SV[4])
-    for ix, stratid in enumerate(strats_w.checked):
-        strat = strats[stratid]
-        simresults = run_sim(strat, path)
-        plot_sim(simresults, f"{DATAID}:{colnm}", Params(**params_w.values_dct))
-        if isinstance(OUTPATH, str):
-            plt.savefig(j(OUTPATH, f"{DATAID}-{colnm.replace('/', '')}-{ix}-{STARTPC*100:.0f}-{LENPC*100:.0f}.png"))
-        plt.show()
+STARTPC, LENPC, SV, COLNM = segment_w.values[0], segment_w.values[1], strat1_w.values, datacols_w.value
+path = pdread(DATAFN, COLNM, from_pc=STARTPC, period_pc=LENPC, min_dt=PATH_MIN_DATE)
+strats["slider"] = strategy.from_mgw(m=100*SV[0], g=SV[1], w=SV[2], u=SV[3], amt_rsk=TVL/path[0]*(1-SV[4]), amt_csh=TVL*SV[4])
+for ix, stratid in enumerate(strats_w.checked):
+    strat = strats[stratid]
+    simresults = run_sim(strat, path)
+    plot_sim(simresults, f"{DATAID}:{COLNM}", Params(**params_w.values_dct))
+    if isinstance(OUTPATH, str):
+        plt.savefig(j(OUTPATH, f"{DATAID}-{COLNM.replace('/', '')}-{ix}-{STARTPC*100:.0f}-{LENPC*100:.0f}.png"))
+    plt.show()
 
 # Provide the corresponding box above (_"Show target directory listing"_) is checked, this will create a list of all `png` files generated throughout your analysis. Those files will only be generated is the box _"Save output to target directory"_ box is checked. The target directory is preset to the directory of this notebook, but you can change this in the code above. Keep in minds that if you run this analysis **on Binder, you have to download all files you want to keep before the server is destroyed.**
 
