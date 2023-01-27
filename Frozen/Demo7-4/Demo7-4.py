@@ -39,6 +39,37 @@ print_version(require="2.2.4")
 # [frozen_nb]:https://mybinder.org/v2/gh/bancorprotocol/carbon-simulator-binder/frozen_20230127?labpath=Frozen%2FDemo7-4%2FDemo7-4.ipynb
 # [frozen_gh]:https://github.com/bancorprotocol/carbon-simulator-binder/blob/main/Frozen/Demo7-4/Demo7-4.ipynb
 
+# ## Usage instructions
+#
+# ### Installation
+#
+# This notebook should run straight out of the box at the Binder URL provided above. Alternatively you can download it locally and make sure `carbon-simulator` and the dependencies in `requirements.txt` are installed. You can install `carbon-simulator` [via pypi](https://pypi.org/project/carbon-simulator/). Alternatively, you can download the simulator [from github](https://github.com/bancorprotocol/carbon-simulator-binder) and then place this notebook in the root directory of the repo, or any other directory on your system that contains a `carbon` directory symlinked to the `carbon` directory in the repo.
+#
+#
+# ### Parameter updates
+#
+# This notebook is controlled with a combination of code-based parameter pre-sets, and UI-driven choices using [Jupyter Widgets](https://ipywidgets.readthedocs.io/en/stable/). You can usually refresh the simulation by running the cell generating the simulation output, but recommended procedure is a **Run All Cells** after every change. There is one gotcha, and its TLDR is: **If you run into a problem after changing parameters, restart the kernel and Run All again**. The longer version is as follows:
+#
+#
+# The widgets all appear in codeblocks of this style:
+#
+#     try:
+#         segment_w(vertical=True)
+#     except:
+#         segment_w = PcSliderManager(["Start date %", "Length %"], values=[0,1])
+#         segment_w(vertical=True)
+#         
+#  
+# The reason is as follows: the `segment_w = ...` statement recreates the widget at every run, which mean it will lose state at every run, which breaks our workflow. The statement `segment_w(...)` only displays the widget, which means it is safe to run repeatedly, without losing state. Therefore at every run, we try to run the widget. This will fail at the first run, so the initialization code in the except-block is executed. Subsequent runs then no longer touch that initialization code, as then the try-block succeeds.
+#
+# Herein lies the problem: once a widget has been created, changes to the initialization code won't take effect unless the try-block fails, hence the **Restart kernel and run all** procedure above. This however leads you to lose state in _all_ widgets. If you want to avoid this, you can make the specific try-block fail, eg by temporarily renaming the function to `segment_w1(...)` and changing it back once the initializations work properly.
+#
+# ### JupyText `.py` file
+#
+# This notebook is set up for [JupyText](https://jupytext.readthedocs.io/en/latest/) which, when installed, tracks the notebook code in a `.py` file with the same base name as the notebook. If you have JupyText installed (which is not the case on Binder) then you can open either the `.py` or the `.ipynb` file, they will both open the same notebook, and the two files will be kept in synch. 
+#
+# For practical work on Binder you can ignore the `.py` file. However, its diffs -- if available -- are more meaningful than the diffs on the `.ipynb` file where most of the changes you'll see will related to changes in outputs, many of them spurious. 
+
 # ## Setup
 
 # remove at next update
@@ -66,11 +97,11 @@ except:
         {f"Save output to target directory": True,
          f"Show target directory listing": True,
          f"Generate docx & zip from charts": True,
-         f"Clear files before each run": False,
+         f"Clear files before each run": True,
         })
     output_w()
 
-# ### The source data collection (filename)
+# ### The source data collection (filename) and columns (data series)
 # filename determines collection, eg `RAN-050-00` is sig=50% vol and mu=0% drift; see available collections in dropdown
 
 DATAPATH = "../data"
@@ -79,10 +110,6 @@ try:
 except:
     datafn_w = DropdownManager(listdir(DATAPATH, ".pickle"), defaultval="BTC-COINS")
     datafn_w()
-
-# ### The data columns within that data collection (scenarios)
-#
-# Withing the collection there are multiple columns (up to 1000!). With the check boxes, you can choose from a specific subset of those colums. You can specify this subset setting `COL0` and `NCOLS`. The first `NCCOLS` are checked.
 
 cols = tuple(pdcols(j(DATAPATH, f"{datafn_w.value}.pickle")))
 try:
@@ -93,38 +120,28 @@ except:
     datacols_w = DropdownManager(cols)
     datacols_w()
 
-# ### Strategies
-#
-# This is the list of strategies to be tested against the paths. The first strategy is driven by the sliders below. The other strategies are hard-coded in the dict. The strategies `m1`, `m2` are strategy portfolios.
+# ### Strategy selection
 
 try:
-    strats_w(vertical=False)
+    strats_w()
 except:
     strats = {
-         "slider":  None,
-         "s1":      strategy.from_mgw(m=100, g=0.01, w=0.02, amt_rsk=1, amt_csh=0),
-         "s2":      strategy.from_mgw(m=100, g=0.05, w=0.15, u=0.7, amt_rsk=1, amt_csh=0),
-         "s3":      strategy(p_buy_a=80, p_buy_b=70, p_sell_a=110, p_sell_b=120, amt_rsk= 1, amt_csh=0),
-         "m1":     [strategy.from_mgw(m=100, g=0.25, w=0.05, amt_rsk=1, amt_csh=0),
-                    strategy.from_mgw(m=100, g=0.10, w=0.03, amt_rsk=1, amt_csh=0)],  
-         "m2":     [strategy.from_mgw(m=100, g=0.10, w=0.1,  amt_rsk=1, amt_csh=0),
-                    strategy.from_mgw(m=100, g=0.20, w=0.1,  amt_rsk=1, amt_csh=0)],  
-         "uv3":     strategy.from_u3(p_lo=100, p_hi=150, start_below=True, fee_pc=0.05, tvl_csh=1000),
+         "slider":     None, # driven by sliders below
+         "single1":    strategy.from_mgw(m=100, g=0.01, w=0.02, amt_rsk=1, amt_csh=0),
+         "multiple1":  [strategy.from_mgw(m=100, g=0.25, w=0.05, amt_rsk=1, amt_csh=0),
+                       strategy.from_mgw(m=100, g=0.10, w=0.03, amt_rsk=1, amt_csh=0)],  
+         "univ3":      strategy.from_u3(p_lo=100, p_hi=150, start_below=True, fee_pc=0.05, tvl_csh=1000),
     }
-    strats_w = CheckboxManager(strats.keys(), values=[1,0,0,0,0,0,0])
-    #strats_w = CheckboxManager(strats.keys(), values=[1,0,0,0,0,0,0])
-    #strats_w = CheckboxManager(strats.keys(), values=[0,0,0,0,0,0,1])
-    strats_w(vertical=False)
-
-# The checkboxes above determined which strategies are tested, one by one.
+    strats_w = CheckboxManager(strats.keys(), values=[1,0,0,0])
+    strats_w()
 
 # ### Elements to show on the chart
 
 try: 
-    params_w(vertical=True)
+    params_w()
 except:
     params_w = CheckboxManager.from_idvdct(sim_params)
-    params_w(vertical=True)
+    params_w()
 
 # ### Time period
 #
@@ -173,50 +190,15 @@ for ix, stratid in enumerate(strats_w.checked):
 
 if OUTPATH and output_w.values[1]:
     print("Listing OUTPATH [uncheck box at top to disable]")
-    print ([fn[:-4] for fn in os.listdir(OUTPATH) if fn[-4:]==".png"])
+    print ("\n".join([fn[:-4] for fn in os.listdir(OUTPATH) if fn[-4:]==".png"]))
 
 # Provide the corresponding box above (_"Generate docx & zip from charts"_) is checked, this code will create a Word `docx` file embedding all the `png` files in this folder. You can simply download this file via the Jupyter Lab interface to have all charts together in one convenient place. You can then extract them at a later stage from the `docx` files for example via copy and paste. The files will also all be consolidated into a single zip file.
 
 if OUTPATH and output_w.values[2]:
     print("Creating consolidated docx and zip from charts [uncheck box at top to disable]")
-    filelist = os.listdir(OUTPATH)
-    filelist = [fn for fn in filelist if fn[-4:]==".png"]
-    markdown = "\n\n".join(f"![]({OUTPATH}/{fn})" for fn in filelist)
-    fsave(markdown, "_CHARTS.md", OUTPATH)
+    markdown = "\n\n".join(f"![]({OUTPATH}/{fn})" for fn in [fn for fn in os.listdir(OUTPATH) if fn[-4:]==".png"])
+    fsave(markdown, "_CHARTS.md", OUTPATH, quiet=True)
     # !pandoc {OUTPATH}/_CHARTS.md -o {OUTPATH}/_CHARTS.docx
-    # !zip _CHARTS.zip *.png 
-    print("---")
-    # !ls
-
-# ## Usage instructions
-#
-# ### Installation
-#
-# This notebook should run straight out of the box at the Binder URL provided above. Alternatively you can download it locally and make sure `carbon-simulator` and the dependencies in `requirements.txt` are installed. You can install `carbon-simulator` [via pypi](https://pypi.org/project/carbon-simulator/). Alternatively, you can download the simulator [from github](https://github.com/bancorprotocol/carbon-simulator-binder) and then place this notebook in the root directory of the repo, or any other directory on your system that contains a `carbon` directory symlinked to the `carbon` directory in the repo.
-#
-#
-# ### Parameter updates
-#
-# This notebook is controlled with a combination of code-based parameter pre-sets, and UI-driven choices using [Jupyter Widgets](https://ipywidgets.readthedocs.io/en/stable/). You can usually refresh the simulation by running the cell generating the simulation output, but recommended procedure is a **Run All Cells** after every change. There is one gotcha, and its TLDR is: **If you run into a problem after changing parameters, restart the kernel and Run All again**. The longer version is as follows:
-#
-#
-# The widgets all appear in codeblocks of this style:
-#
-#     try:
-#         segment_w(vertical=True)
-#     except:
-#         segment_w = PcSliderManager(["Start date %", "Length %"], values=[0,1])
-#         segment_w(vertical=True)
-#         
-#  
-# The reason is as follows: the `segment_w = ...` statement recreates the widget at every run, which mean it will lose state at every run, which breaks our workflow. The statement `segment_w(...)` only displays the widget, which means it is safe to run repeatedly, without losing state. Therefore at every run, we try to run the widget. This will fail at the first run, so the initialization code in the except-block is executed. Subsequent runs then no longer touch that initialization code, as then the try-block succeeds.
-#
-# Herein lies the problem: once a widget has been created, changes to the initialization code won't take effect unless the try-block fails, hence the **Restart kernel and run all** procedure above. This however leads you to lose state in _all_ widgets. If you want to avoid this, you can make the specific try-block fail, eg by temporarily renaming the function to `segment_w1(...)` and changing it back once the initializations work properly.
-#
-# ### JupyText `.py` file
-#
-# This notebook is set up for [JupyText](https://jupytext.readthedocs.io/en/latest/) which, when installed, tracks the notebook code in a `.py` file with the same base name as the notebook. If you have JupyText installed (which is not the case on Binder) then you can open either the `.py` or the `.ipynb` file, they will both open the same notebook, and the two files will be kept in synch. 
-#
-# For practical work on Binder you can ignore the `.py` file. However, its diffs -- if available -- are more meaningful than the diffs on the `.ipynb` file where most of the changes you'll see will related to changes in outputs, many of them spurious. 
+    # !zip _CHARTS.zip -qq *.png 
 
 
