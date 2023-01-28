@@ -18,6 +18,7 @@ from carbon.helpers.stdimports import *
 from carbon.helpers import j, strategy, pdread, pdcols, fsave, listdir, Params, PathInterpolation as PI
 from carbon.helpers.widgets import CheckboxManager, DropdownManager, PcSliderManager
 from carbon.helpers.simulation import run_sim, plot_sim, SIM_DEFAULT_PARAMS
+import pickle
 
 plt.rcParams['figure.figsize'] = [12,6]
 plt_style('seaborn-v0_8-dark', 'seaborn-dark')
@@ -81,10 +82,10 @@ except:
 cols = tuple(pdcols(j(DATAPATH, f"{datafn_w.value}.pickle")))
 try:
     assert datafn_w.value == old_datafn_w_value
-    datacols_w()
+    datacols_w1()
 except:
     old_datafn_w_value = datafn_w.value
-    datacols_w = DropdownManager(cols)
+    datacols_w = DropdownManager(cols, defaultval="BTC/ETH" if datafn_w.value=="COINS-ETH" else None)
     datacols_w()
 
 try:
@@ -98,17 +99,20 @@ PIFACTOR = 1            # the scaling factor applied to the macroscopic vol of t
 
 # ### Strategy selection
 
+strats = {
+     "slider":     None, # driven by sliders below
+     "wide1":      [strategy.from_mgw(m=100, g=0.1, w=0.4)],
+     "wide2":      [strategy.from_mgw(m=100, g=0.4, w=0.1)],
+     "mid1":       [strategy.from_mgw(m=100, g=0.2, w=0.1)],
+     "mid2":       [strategy.from_mgw(m=100, g=0.3, w=0.01)],
+     "narrow":     [strategy.from_mgw(m=100, g=0.05, w=0.01)],
+     #"uni v3":    [strategy.from_u3(p_lo=50, p_hi=100, start_below=True, fee_pc=0.05, tvl_csh=1000)],
+}
 try:
     strats_w()
 except:
-    strats = {
-         "slider":     None, # driven by sliders below
-         "single":     strategy.from_mgw(m=100, g=0.01, w=0.02, amt_rsk=1, amt_csh=0),
-         "multiple":   [strategy.from_mgw(m=100, g=0.25, w=0.05, amt_rsk=1, amt_csh=0),
-                       strategy.from_mgw(m=100, g=0.10, w=0.03, amt_rsk=1, amt_csh=0)],  
-         "uni v3":      strategy.from_u3(p_lo=50, p_hi=100, start_below=True, fee_pc=0.05, tvl_csh=1000),
-    }
-    strats_w = CheckboxManager(strats.keys(), values=[1,0,0,0])
+    strats_w = CheckboxManager(strats.keys(), values=True)
+    #strats_w = CheckboxManager(strats.keys(), values=[1,0,0,0,0,0])
     strats_w()
 
 # ### Elements to show on the chart
@@ -123,44 +127,61 @@ except:
 #
 # this is the time period that is plotted; periods and start dates are quoted as percentage total time; the window is cut at the left, eg start=0.9 and length=0.5 shows 0.9...1.0. Before the sliders are applied, everything before `PATH_MIN_DATE` is discarded. 
 
-PATH_MIN_DATE = "2022-01-01"
+PATH_MIN_DATE = "2021-07-01"
 try:
     segment_w(vertical=True)
 except:
     segment_w = PcSliderManager(["Start date %", "Length %"], values=[0,1])
     segment_w(vertical=True)
 
+# ### All strategies
+#
+#  The parameter `csh` is the initial cash percentage of the portfolio (100%=all cash), and it total cash value is `TVL`. The slider `shift` allows shifting _all_ strategies up or down (eg, 5 is 5% up)
+
+TVL = 1000
+try:
+    stratall_w(vertical=True)
+except:
+    stratall_w = PcSliderManager(["csh", "shift"], values=[0.5, 0], range=[(0,1), (-0.5,0.5)])
+    stratall_w(vertical=True)
+
 # ### The `slider` strategy
 #
-# This is the strategy called `slider`. Here `m` is the mid price of the range (adjust `S0`, `SMIN`, `SMAX` to change), `g%` is the gap between the ranges in percent, and `w%` is the width of the ranges in percent. The parameter `u%` is the range utilisation rate, where `u=0%` means the range is full, and `u~100%` means that it is almost empty. The parameter `csh` is the initial cash percenate of the portfolio, and it total cash value is `TVL`.
+# This is the strategy called `slider`. Here `m` is the mid price of the range (adjust `S0`, `SMIN`, `SMAX` to change), `g%` is the gap between the ranges in percent, and `w%` is the width of the ranges in percent. The parameter `u%` is the range utilisation rate, where `u=0%` means the range is full, and `u~100%` means that it is almost empty.
 
 try:
     strat1_w(vertical=True)
 except:
-    S0, SMIN, SMAX, TVL = 100, 50, 200, 1000
-    strat1_w = PcSliderManager(["m", "g%", "w%", "u%", "csh"], 
-                        values=[S0/100, 0.1, 0.25, 0, 0.5], 
-                        range=[(SMIN/100,SMAX/100),(0,0.50),(0,0.50),(0,1),(0,1)])
+    S0, SMIN, SMAX = 100, 50, 200
+    strat1_w = PcSliderManager(["m", "g%", "w%", "u%"], 
+                        values=[S0/100, 0.1, 0.25, 0], 
+                        range=[(SMIN/100,SMAX/100),(0,0.50),(0,0.50),(0,1)])
     strat1_w(vertical=True)
 
 # ## Simulation
 
 if output_w.values[3]:
     # !rm {OUTPATH}/*.png
+    # !rm {OUTPATH}/*.data
     # !rm {OUTPATH}/_CHARTS.*
 
 DATAID, DATAFN = datafn_w.value, j(DATAPATH, f"{datafn_w.value}.pickle") 
 STARTPC, LENPC, SV, COLNM = segment_w.values[0], segment_w.values[1], strat1_w.values, datacols_w.value
 path0, pair = pdread(DATAFN, COLNM, from_pc=STARTPC, period_pc=LENPC, min_dt=PATH_MIN_DATE, invert=pathops_w.values[0], tkns=True)
 path = PI.interpolate(path0, PIPERIOD, sigfctr=PIFACTOR, enable=pathops_w.values[1])
-strats["slider"] = strategy.from_mgw(m=100*SV[0], g=SV[1], w=SV[2], u=SV[3], amt_rsk=TVL/path0[0]*(1-SV[4]), amt_csh=TVL*SV[4])
+strats["slider"] = [strategy.from_mgw(m=100*SV[0], g=SV[1], w=SV[2], u=SV[3])]
 for ix, stratid in enumerate(strats_w.checked):
     strat = strats[stratid]
-    simresults  = run_sim(strat, path)
-    simresults0 = run_sim(strat, path0) if not path is path0 else simresults
+    for strati in strat:
+        strati.set_tvl(spot=path0[0], cashpc=stratall_w.values[0], tvl=TVL)
+    simresults  = run_sim(strat, path, shift=stratall_w.values[1])
+    simresults0 = run_sim(strat, path0, shift=stratall_w.values[1]) if not path is path0 else simresults
+    v0, v1, v1a = simresults.value_r[0], simresults.value_r[-1], simresults0.value_r[-1]
+    print(f"TVL0={v0:.1f}, TVL1_hf={v1:.1f} ({v1/v0*100-100:.1f}%) TVL1_lf={v1a:.1f} ({v1a/v0*100-100:.1f}%)")
     plot_sim(simresults, simresults0, f"{DATAID}:{COLNM}", Params(**params_w.values_dct), pair=pair)
     if isinstance(OUTPATH, str):
         plt.savefig(j(OUTPATH, fname(DATAID, COLNM)))
+        fsave(pickle.dumps((simresults, simresults0)), f"{fname(DATAID, COLNM)}.data", OUTPATH, binary=True)
     plt.show()
 
 # Provide the corresponding box above (_"Show target directory listing"_) is checked, this will create a list of all `png` files generated throughout your analysis. Those files will only be generated is the box _"Save output to target directory"_ box is checked. The target directory is preset to the directory of this notebook, but you can change this in the code above. Keep in minds that if you run this analysis **on Binder, you have to download all files you want to keep before the server is destroyed.**
@@ -172,10 +193,12 @@ if OUTPATH and output_w.values[1]:
 # Provide the corresponding box above (_"Generate docx & zip from charts"_) is checked, this will create a Word `docx` file embedding all the `png` files
 
 if OUTPATH and output_w.values[2]:
-    print("Creating consolidated docx and zip from charts [uncheck box at top to disable]")
+    print("Creating consolidated docx and zip from charts and data [uncheck box at top to disable]")
     markdown = "\n\n".join(f"![]({OUTPATH}/{fn})" for fn in [fn for fn in os.listdir(OUTPATH) if fn[-4:]==".png"])
+    # !zip _CHARTS.zip -qq *.png
+    # !zip _DATA.zip -qq *.data 
     fsave(markdown, "_CHARTS.md", OUTPATH, quiet=True)
     # !pandoc {OUTPATH}/_CHARTS.md -o {OUTPATH}/_CHARTS.docx
-    # !zip _CHARTS.zip -qq *.png 
+    
 
 
