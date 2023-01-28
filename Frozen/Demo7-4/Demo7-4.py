@@ -82,7 +82,7 @@ except:
 cols = tuple(pdcols(j(DATAPATH, f"{datafn_w.value}.pickle")))
 try:
     assert datafn_w.value == old_datafn_w_value
-    datacols_w1()
+    datacols_w()
 except:
     old_datafn_w_value = datafn_w.value
     datacols_w = DropdownManager(cols, defaultval="BTC/ETH" if datafn_w.value=="COINS-ETH" else None)
@@ -199,6 +199,6 @@ if OUTPATH and output_w.values[2]:
     # !zip _DATA.zip -qq *.data 
     fsave(markdown, "_CHARTS.md", OUTPATH, quiet=True)
     # !pandoc {OUTPATH}/_CHARTS.md -o {OUTPATH}/_CHARTS.docx
-    
+
 
 
