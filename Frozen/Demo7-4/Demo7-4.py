@@ -82,7 +82,7 @@ except:
 cols = tuple(pdcols(j(DATAPATH, f"{datafn_w.value}.pickle")))
 try:
     assert datafn_w.value == old_datafn_w_value
-    datacols_w()
+    datacols_w1()
 except:
     old_datafn_w_value = datafn_w.value
     datacols_w = DropdownManager(cols, defaultval="BTC/ETH" if datafn_w.value=="COINS-ETH" else None)
@@ -106,7 +106,7 @@ strats = {
      "mid1":       [strategy.from_mgw(m=100, g=0.2, w=0.1)],
      "mid2":       [strategy.from_mgw(m=100, g=0.3, w=0.01)],
      "narrow":     [strategy.from_mgw(m=100, g=0.05, w=0.01)],
-     #"uni v3":    [strategy.from_u3(p_lo=50, p_hi=100, start_below=True, fee_pc=0.05, tvl_csh=1000)],
+     "uni v3":     [strategy.from_u3(p_lo=10, p_hi=14, start_below=False, fee_pc=0.05, tvl_csh=1000)],
 }
 try:
     strats_w()
@@ -127,7 +127,7 @@ except:
 #
 # this is the time period that is plotted; periods and start dates are quoted as percentage total time; the window is cut at the left, eg start=0.9 and length=0.5 shows 0.9...1.0. Before the sliders are applied, everything before `PATH_MIN_DATE` is discarded. 
 
-PATH_MIN_DATE = "2021-07-01"
+PATH_MIN_DATE = "2021-01-01" # 2021-01-01 for ETH/BTC and Uni v3 range
 try:
     segment_w(vertical=True)
 except:
@@ -171,9 +171,7 @@ path0, pair = pdread(DATAFN, COLNM, from_pc=STARTPC, period_pc=LENPC, min_dt=PAT
 path = PI.interpolate(path0, PIPERIOD, sigfctr=PIFACTOR, enable=pathops_w.values[1])
 strats["slider"] = [strategy.from_mgw(m=100*SV[0], g=SV[1], w=SV[2], u=SV[3])]
 for ix, stratid in enumerate(strats_w.checked):
-    strat = strats[stratid]
-    for strati in strat:
-        strati.set_tvl(spot=path0[0], cashpc=stratall_w.values[0], tvl=TVL)
+    strat = [s.set_tvl(spot=path0[0], cashpc=stratall_w.values[0], tvl=TVL) for s in strats[stratid]]
     simresults  = run_sim(strat, path, shift=stratall_w.values[1])
     simresults0 = run_sim(strat, path0, shift=stratall_w.values[1]) if not path is path0 else simresults
     v0, v1, v1a = simresults.value_r[0], simresults.value_r[-1], simresults0.value_r[-1]
@@ -199,6 +197,5 @@ if OUTPATH and output_w.values[2]:
     # !zip _DATA.zip -qq *.data 
     fsave(markdown, "_CHARTS.md", OUTPATH, quiet=True)
     # !pandoc {OUTPATH}/_CHARTS.md -o {OUTPATH}/_CHARTS.docx
-
 
 
