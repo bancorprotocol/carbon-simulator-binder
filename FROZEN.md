@@ -1,12 +1,18 @@
 # Table of frozen Binder releases
 
-Title                          | Description
-|------------------------------|-----------|
-**Demo 7-4 20230127**                   |[Demo 7-4 (27 Jan 2023)](https://mybinder.org/v2/gh/bancorprotocol/carbon-simulator-binder/frozen_20230127?labpath=Frozen%2FDemo7-4%2FDemo7-4.ipynb): our current flagship simulation, superseding the ones mentioned below; it simulates the value of a portfolio of Carbon strategies under various market scenarios. [[github]](https://github.com/bancorprotocol/carbon-simulator-binder/blob/frozen_20230127/Frozen/Demo7-4/Demo7-4.ipynb)
-| | -- superseded simulations below -- |
-**Demo 7-4 20230124**                   |[Demo 7-4 (24 Jan 2023)](https://mybinder.org/v2/gh/bancorprotocol/carbon-simulator-binder/frozen_20230124?labpath=Frozen%2FDemo7-4%2FDemo7-4.ipynb): simulates the value of a portfolio of Carbon strategies under various market scenarios.
-**Augmented Demo 7-3**         | containing notebooks [Demo 7-3a](https://mybinder.org/v2/gh/bancorprotocol/carbon-simulator-binder/frozen_20230122?labpath=Frozen%2FDemo7-3%2FDemo7-3a.ipynb), [Demo 7-3b](https://mybinder.org/v2/gh/bancorprotocol/carbon-simulator-binder/frozen_20230122?labpath=Frozen%2FDemo7-3%2FDemo7-3b.ipynb) and [Demo 7-3c](https://mybinder.org/v2/gh/bancorprotocol/carbon-simulator-binder/frozen_20230122?labpath=Frozen%2FDemo7-3%2FDemo7-3c.ipynb) 
-**Demo 7-3**                   |[Demo 7-3 (21 Jan 2023)](https://mybinder.org/v2/gh/bancorprotocol/carbon-simulator-binder/frozen_20230121?labpath=Frozen%2F20230121%2FDemo7-3.ipynb): simulation of the behaviour of a single range under frozen random spot price scenarios 
+## Latest releases
+Title                                 | Description
+|-------------------------------------|-------------|
+**Demo 7-4 latest**                   |[Demo 7-4 (latest)](https://mybinder.org/v2/gh/bancorprotocol/carbon-simulator-binder/latest_7_4?labpath=Frozen%2FDemo7-4%2FDemo7-4.ipynb): Simulates the value of a single Carbon strategy, or a portfolio thereof, under various market and generated scenarios. It uses a streamlined user interface based on ipywidgets rather than scriptable inputs like Demo7-3. [[github]](https://github.com/bancorprotocol/carbon-simulator-binder/blob/latest_7_4/Frozen/Demo7-4/Demo7-4.ipynb)
+**Demo 7-3 latest**                    |[Demo 7-3 (latest)](https://mybinder.org/v2/gh/bancorprotocol/carbon-simulator-binder/latest_7_3?labpath=Frozen%2FDemo7-3%2FDemo7-3.ipynb): Simulates the value of a single Carbon strategy, or a portfolio thereof, under various market and generated scenarios. It uses a python-only user interface suitable for scripting. For a more interactive interface and more explanations, please view Demo 7-4. [[github]](https://github.com/bancorprotocol/carbon-simulator-binder/blob/latest_7_3/Frozen/Demo7-3/Demo7-3.ipynb)
+
+## All releases
+Title                                 | Link
+|-------------------------------------|-----------|
+**Demo 7-4 20230128**                 |Demo7-4 notebook on [Binder](https://mybinder.org/v2/gh/bancorprotocol/carbon-simulator-binder/frozen_20230128?labpath=Frozen%2FDemo7-4%2FDemo7-4.ipynb) and [github](https://github.com/bancorprotocol/carbon-simulator-binder/blob/frozen_20230128/Frozen/Demo7-4/Demo7-4.ipynb)
+**Demo 7-3 20230128**                 |Demo7-3 notebook on [Binder](https://mybinder.org/v2/gh/bancorprotocol/carbon-simulator-binder/frozen_20230128?labpath=Frozen%2FDemo7-3%2FDemo7-3.ipynb) and [github](https://github.com/bancorprotocol/carbon-simulator-binder/blob/frozen_20230128/Frozen/Demo7-3/Demo7-3.ipynb)
+**Demo 7-4 20230127**                 |Demo7-4 notebook on [Binder](https://mybinder.org/v2/gh/bancorprotocol/carbon-simulator-binder/frozen_20230127?labpath=Frozen%2FDemo7-4%2FDemo7-4.ipynb) and [github](https://github.com/bancorprotocol/carbon-simulator-binder/blob/frozen_20230127/Frozen/Demo7-4/Demo7-4.ipynb)
+**Demo 7-4 20230124**                 |Demo7-4 notebook on [Binder](https://mybinder.org/v2/gh/bancorprotocol/carbon-simulator-binder/frozen_20230124?labpath=Frozen%2FDemo7-4%2FDemo7-4.ipynb) 
 
 ---
 
