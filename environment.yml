@@ -4,5 +4,5 @@ dependencies:
   - pip
   - zip
   - pip:
-    - carbon-simulator==2.2.4
+    - carbon-simulator==2.2.5
     - -r requirements.txt
