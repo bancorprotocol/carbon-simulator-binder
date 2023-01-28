@@ -21,7 +21,7 @@ from carbon.helpers.simulation import run_sim, plot_sim, SIM_DEFAULT_PARAMS
 
 plt.rcParams['figure.figsize'] = [12,6]
 plt_style('seaborn-v0_8-dark', 'seaborn-dark')
-print_version(require="2.2.4")
+print_version(require="2.2.5")
 # -
 
 # # Carbon Simulation - Demo 7-4 
@@ -76,7 +76,7 @@ except:
     output_w()
 
 # ### The source data collection (filename) and columns (data series)
-# filename determines collection, eg `RAN-050-00` is sig=50% vol and mu=0% drift, and `BTC-COINS` is a collection of coins with prices expressted in BTC. If you change the top dropdown, Run All to update the bottom one.
+# Filename determines collection, eg `BTC-COINS`is a collection of coins with prices expressted in BTC, and `RAN-050-00` is sig=50% vol and mu=0% drift. If you change the top dropdown, use **Run All** to update the bottom one, choose the pair and whether you'd like to invert it.
 
 DATAPATH = "../data"
 try:
@@ -93,6 +93,12 @@ except:
     old_datafn_w_value = datafn_w.value
     datacols_w = DropdownManager(cols)
     datacols_w()
+
+try:
+    invert_w()
+except:
+    invert_w = CheckboxManager(["invert"])
+    invert_w()
 
 # ### Strategy selection
 
@@ -150,12 +156,12 @@ if output_w.values[3]:
 DATAID, DATAFN = datafn_w.value, j(DATAPATH, f"{datafn_w.value}.pickle") 
 OUTPATH = outpath_w.value if output_w.values[0] else None
 STARTPC, LENPC, SV, COLNM = segment_w.values[0], segment_w.values[1], strat1_w.values, datacols_w.value
-path = pdread(DATAFN, COLNM, from_pc=STARTPC, period_pc=LENPC, min_dt=PATH_MIN_DATE)
+path, pair = pdread(DATAFN, COLNM, from_pc=STARTPC, period_pc=LENPC, min_dt=PATH_MIN_DATE, invert=invert_w.values[0], tkns=True)
 strats["slider"] = strategy.from_mgw(m=100*SV[0], g=SV[1], w=SV[2], u=SV[3], amt_rsk=TVL/path[0]*(1-SV[4]), amt_csh=TVL*SV[4])
 for ix, stratid in enumerate(strats_w.checked):
     strat = strats[stratid]
     simresults = run_sim(strat, path)
-    plot_sim(simresults, f"{DATAID}:{COLNM}", Params(**params_w.values_dct))
+    plot_sim(simresults, f"{DATAID}:{COLNM}", Params(**params_w.values_dct), pair=pair)
     if isinstance(OUTPATH, str):
         plt.savefig(j(OUTPATH, fname(DATAID, COLNM)))
     plt.show()
@@ -166,7 +172,7 @@ if OUTPATH and output_w.values[1]:
     print("Listing OUTPATH [uncheck box at top to disable]")
     print ("\n".join([fn[:-4] for fn in os.listdir(OUTPATH) if fn[-4:]==".png"]))
 
-# Provide the corresponding box above (_"Generate docx & zip from charts"_) is checked, this code will create a Word `docx` file embedding all the `png` files in this folder.
+# Provide the corresponding box above (_"Generate docx & zip from charts"_) is checked, this will create a Word `docx` file embedding all the `png` files
 
 if OUTPATH and output_w.values[2]:
     print("Creating consolidated docx and zip from charts [uncheck box at top to disable]")
