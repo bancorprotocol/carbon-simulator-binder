@@ -25,9 +25,9 @@ print_version(require="2.2.5")
 # -
 
 # # Carbon Simulation - Demo 7-4 
-# _[frozen_20230127][frozen]: this notebook on [Binder][frozen_nb] and on [github][frozen_gh]_
+# _[frozen_20230128][frozen]: **this** notebook on [Binder][frozen_nb] and on [github][frozen_gh];  **latest** notebook on [Binder][latest_nb] and on [github][latest_gh]_
 #
-# Use **Run -- Run All Cells** in the menu above to run the notebook, then adjust the simulation parameters using the widgets provided. You can find **further usage instructions at the end of this notebook**, and throughout the notebook.
+# Use **Run -- Run All Cells** in the menu above to run the notebook, then adjust the simulation parameters using the widgets provided. 
 #
 # Further resources are (1) the github repo [github:carbon-simulator-binder][repob] associated with this binder, (2) the main simulator repo [github:carbon-simulator][repo], (3) the carbon package [pypi:carbon-simulator][simpypi] and finally (4) the ["Carbon Simulator" presentation][presn]
 #
@@ -35,9 +35,11 @@ print_version(require="2.2.5")
 # [simpypi]:https://pypi.org/project/carbon-simulator/
 # [repo]:https://github.com/bancorprotocol/carbon-simulator
 # [repob]:https://github.com/bancorprotocol/carbon-simulator-binder
-# [frozen]:https://mybinder.org/v2/gh/bancorprotocol/carbon-simulator-binder/frozen_20230127
-# [frozen_nb]:https://mybinder.org/v2/gh/bancorprotocol/carbon-simulator-binder/frozen_20230127?labpath=Frozen%2FDemo7-4%2FDemo7-4.ipynb
-# [frozen_gh]:https://github.com/bancorprotocol/carbon-simulator-binder/blob/frozen_20230127/Frozen/Demo7-4/Demo7-4.ipynb
+# [frozen]:https://mybinder.org/v2/gh/bancorprotocol/carbon-simulator-binder/frozen_20230128
+# [frozen_nb]:https://mybinder.org/v2/gh/bancorprotocol/carbon-simulator-binder/frozen_20230128?labpath=Frozen%2FDemo7-4%2FDemo7-4.ipynb
+# [frozen_gh]:https://github.com/bancorprotocol/carbon-simulator-binder/blob/frozen_20230128/Frozen/Demo7-4/Demo7-4.ipynb
+# [latest_nb]:https://mybinder.org/v2/gh/bancorprotocol/carbon-simulator-binder/latest_7_4?labpath=Frozen%2FDemo7-4%2FDemo7-4.ipynb
+# [latest_gh]:https://github.com/bancorprotocol/carbon-simulator-binder/blob/latest_7_4/Frozen/Demo7-4/Demo7-4.ipynb
 
 # ## Setup
 
