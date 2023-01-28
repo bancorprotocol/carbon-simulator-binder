@@ -15,13 +15,13 @@
 
 # +
 from carbon.helpers.stdimports import *
-from carbon.helpers import j, strategy, pdread, pdcols, fsave, listdir, Params
+from carbon.helpers import j, strategy, pdread, pdcols, fsave, listdir, Params, interpolate
 from carbon.helpers.widgets import CheckboxManager, DropdownManager, PcSliderManager
 from carbon.helpers.simulation import run_sim, plot_sim, SIM_DEFAULT_PARAMS
 
 plt.rcParams['figure.figsize'] = [12,6]
 plt_style('seaborn-v0_8-dark', 'seaborn-dark')
-print_version(require="2.2.5")
+print_version(require="2.2.6")
 # -
 
 # # Carbon Simulation - Demo 7-4 
@@ -50,6 +50,7 @@ sim_params["plotValueCsh"] = True
 
 import datetime 
 fname = lambda data, col: f"{datetime.datetime.now().strftime('%m%d-%H%M%S')}-{data}-{col.replace('/', '')}.png"
+INTERPOLATION_PERIOD = pd.Timedelta(hours=1)
 # -
 
 # ### Type and destination of generated output
@@ -78,7 +79,7 @@ except:
     output_w()
 
 # ### The source data collection (filename) and columns (data series)
-# Filename determines collection, eg `BTC-COINS`is a collection of coins with prices expressted in BTC, and `RAN-050-00` is sig=50% vol and mu=0% drift. If you change the top dropdown, use **Run All** to update the bottom one, choose the pair and whether you'd like to invert it.
+# Filename determines collection, eg `BTC-COINS`is a collection of coins with prices expressted in BTC, and `RAN-050-00` is sig=50% vol and mu=0% drift. If you change the top dropdown, use **Run All** to update the bottom dropdown allowing you to choose the pair. Check `invert` if you want inverse quotation, and choose `hf interpolate` and if you want to augment the path with random high frequency data of the same overall volatility.
 
 DATAPATH = "../data"
 try:
@@ -97,10 +98,10 @@ except:
     datacols_w()
 
 try:
-    invert_w()
+    pathops_w()
 except:
-    invert_w = CheckboxManager(["invert"])
-    invert_w()
+    pathops_w = CheckboxManager(["invert", "hf interpolate"])
+    pathops_w()
 
 # ### Strategy selection
 
@@ -112,7 +113,7 @@ except:
          "single":     strategy.from_mgw(m=100, g=0.01, w=0.02, amt_rsk=1, amt_csh=0),
          "multiple":   [strategy.from_mgw(m=100, g=0.25, w=0.05, amt_rsk=1, amt_csh=0),
                        strategy.from_mgw(m=100, g=0.10, w=0.03, amt_rsk=1, amt_csh=0)],  
-         "univ3":      strategy.from_u3(p_lo=100, p_hi=150, start_below=True, fee_pc=0.05, tvl_csh=1000),
+         "uni v3":      strategy.from_u3(p_lo=50, p_hi=100, start_below=True, fee_pc=0.05, tvl_csh=1000),
     }
     strats_w = CheckboxManager(strats.keys(), values=[1,0,0,0])
     strats_w()
@@ -158,11 +159,13 @@ if output_w.values[3]:
 DATAID, DATAFN = datafn_w.value, j(DATAPATH, f"{datafn_w.value}.pickle") 
 OUTPATH = outpath_w.value if output_w.values[0] else None
 STARTPC, LENPC, SV, COLNM = segment_w.values[0], segment_w.values[1], strat1_w.values, datacols_w.value
-path, pair = pdread(DATAFN, COLNM, from_pc=STARTPC, period_pc=LENPC, min_dt=PATH_MIN_DATE, invert=invert_w.values[0], tkns=True)
-strats["slider"] = strategy.from_mgw(m=100*SV[0], g=SV[1], w=SV[2], u=SV[3], amt_rsk=TVL/path[0]*(1-SV[4]), amt_csh=TVL*SV[4])
+path0, pair = pdread(DATAFN, COLNM, from_pc=STARTPC, period_pc=LENPC, min_dt=PATH_MIN_DATE, invert=pathops_w.values[0], tkns=True)
+path = interpolate(path0, INTERPOLATION_PERIOD, enable=pathops_w.values[1])
+strats["slider"] = strategy.from_mgw(m=100*SV[0], g=SV[1], w=SV[2], u=SV[3], amt_rsk=TVL/path0[0]*(1-SV[4]), amt_csh=TVL*SV[4])
 for ix, stratid in enumerate(strats_w.checked):
     strat = strats[stratid]
-    simresults = run_sim(strat, path)
+    #simresults0 = run_sim(strat, path0)
+    simresults  = run_sim(strat, path)
     plot_sim(simresults, f"{DATAID}:{COLNM}", Params(**params_w.values_dct), pair=pair)
     if isinstance(OUTPATH, str):
         plt.savefig(j(OUTPATH, fname(DATAID, COLNM)))
@@ -182,3 +185,5 @@ if OUTPATH and output_w.values[2]:
     fsave(markdown, "_CHARTS.md", OUTPATH, quiet=True)
     # !pandoc {OUTPATH}/_CHARTS.md -o {OUTPATH}/_CHARTS.docx
     # !zip _CHARTS.zip -qq *.png 
+
+
