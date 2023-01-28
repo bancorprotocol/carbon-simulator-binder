@@ -111,8 +111,8 @@ if DELETE_BEFORE_SIM:
 for colnm, invert in COLS_INVERT.items():
     path, pair = pdread(DATAFN, colnm, from_pc=STARTPC, period_pc=LENPC, min_dt=PATH_MIN_DATE, invert=invert, tkns=True)
     for stratid, strat in STRATS.items():
-        simresults = run_sim(strat, path)
-        plot_sim(simresults, f"{DATAID}:{colnm}", Params(**SIM_PARAMS), pair=pair)
+        simresults = run_sim(strat, path, shift=0)
+        plot_sim(simresults, simresults, f"{DATAID}:{colnm}", Params(**SIM_PARAMS), pair=pair)
         if isinstance(OUTPATH, str):
             plt.savefig(j(OUTPATH, fname(DATAID, colnm, stratid)))
         plt.show()
