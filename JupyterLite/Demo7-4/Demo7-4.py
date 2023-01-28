@@ -13,6 +13,10 @@
 #     name: python3
 # ---
 
+# %pip install carbon-simulator
+# %pip install pyyaml
+# %pip install ipywidgets
+
 # +
 from carbon.helpers.stdimports import *
 from carbon.helpers import j, strategy, pdread, pdcols, fsave, listdir, Params
@@ -25,21 +29,8 @@ print_version(require="2.2.5")
 # -
 
 # # Carbon Simulation - Demo 7-4 
-# _[frozen_20230128][frozen]: **this** notebook on [Binder][frozen_nb] and on [github][frozen_gh];  **latest** notebook on [Binder][latest_nb] and on [github][latest_gh]_
 #
 # Use **Run -- Run All Cells** in the menu above to run the notebook, then adjust the simulation parameters using the widgets provided. 
-#
-# Further resources are (1) the github repo [github:carbon-simulator-binder][repob] associated with this binder, (2) the main simulator repo [github:carbon-simulator][repo], (3) the carbon package [pypi:carbon-simulator][simpypi] and finally (4) the ["Carbon Simulator" presentation][presn]
-#
-# [presn]:https://github.com/bancorprotocol/carbon-simulator/blob/beta/resources/notes/202301%20Simulating%20Carbon.pdf
-# [simpypi]:https://pypi.org/project/carbon-simulator/
-# [repo]:https://github.com/bancorprotocol/carbon-simulator
-# [repob]:https://github.com/bancorprotocol/carbon-simulator-binder
-# [frozen]:https://mybinder.org/v2/gh/bancorprotocol/carbon-simulator-binder/frozen_20230128
-# [frozen_nb]:https://mybinder.org/v2/gh/bancorprotocol/carbon-simulator-binder/frozen_20230128?labpath=Frozen%2FDemo7-4%2FDemo7-4.ipynb
-# [frozen_gh]:https://github.com/bancorprotocol/carbon-simulator-binder/blob/frozen_20230128/Frozen/Demo7-4/Demo7-4.ipynb
-# [latest_nb]:https://mybinder.org/v2/gh/bancorprotocol/carbon-simulator-binder/latest_7_4?labpath=Frozen%2FDemo7-4%2FDemo7-4.ipynb
-# [latest_gh]:https://github.com/bancorprotocol/carbon-simulator-binder/blob/latest_7_4/Frozen/Demo7-4/Demo7-4.ipynb
 
 # ## Setup
 
@@ -53,26 +44,14 @@ fname = lambda data, col: f"{datetime.datetime.now().strftime('%m%d-%H%M%S')}-{d
 # -
 
 # ### Type and destination of generated output
-#
-# If `OUTPATH` is `None`, output will not be saved, otherwise it will be saved to the indicated directory (use `"."` for current)
 
-try:
-    outpath_w()
-except:
-    outpath_w = DropdownManager({
-        "."                          : "Current",
-        "/Users/skl/Desktop/sim7-4"  : "SKL Desktop/sim7-4", 
-    },
-    descr="Target", defaultix=0)
-    outpath_w()
-
+OUTPATH = "."
 try:
     output_w()
 except:
     output_w = CheckboxManager.from_idvdct(
         {f"Save output to target directory": True,
          f"Show target directory listing": True,
-         f"Generate docx & zip from charts": True,
          f"Clear files before each run": False,
         })
     output_w()
@@ -80,7 +59,7 @@ except:
 # ### The source data collection (filename) and columns (data series)
 # Filename determines collection, eg `BTC-COINS`is a collection of coins with prices expressted in BTC, and `RAN-050-00` is sig=50% vol and mu=0% drift. If you change the top dropdown, use **Run All** to update the bottom one, choose the pair and whether you'd like to invert it.
 
-DATAPATH = "../data"
+DATAPATH = "."
 try:
     datafn_w()
 except:
@@ -151,12 +130,11 @@ except:
 
 # ## Simulation
 
-if output_w.values[3]:
+if output_w.values[2]:
     # !rm {OUTPATH}/*.png
     # !rm {OUTPATH}/_CHARTS.*
 
 DATAID, DATAFN = datafn_w.value, j(DATAPATH, f"{datafn_w.value}.pickle") 
-OUTPATH = outpath_w.value if output_w.values[0] else None
 STARTPC, LENPC, SV, COLNM = segment_w.values[0], segment_w.values[1], strat1_w.values, datacols_w.value
 path, pair = pdread(DATAFN, COLNM, from_pc=STARTPC, period_pc=LENPC, min_dt=PATH_MIN_DATE, invert=invert_w.values[0], tkns=True)
 strats["slider"] = strategy.from_mgw(m=100*SV[0], g=SV[1], w=SV[2], u=SV[3], amt_rsk=TVL/path[0]*(1-SV[4]), amt_csh=TVL*SV[4])
@@ -173,12 +151,3 @@ for ix, stratid in enumerate(strats_w.checked):
 if OUTPATH and output_w.values[1]:
     print("Listing OUTPATH [uncheck box at top to disable]")
     print ("\n".join([fn[:-4] for fn in os.listdir(OUTPATH) if fn[-4:]==".png"]))
-
-# Provide the corresponding box above (_"Generate docx & zip from charts"_) is checked, this will create a Word `docx` file embedding all the `png` files
-
-if OUTPATH and output_w.values[2]:
-    print("Creating consolidated docx and zip from charts [uncheck box at top to disable]")
-    markdown = "\n\n".join(f"![]({OUTPATH}/{fn})" for fn in [fn for fn in os.listdir(OUTPATH) if fn[-4:]==".png"])
-    fsave(markdown, "_CHARTS.md", OUTPATH, quiet=True)
-    # !pandoc {OUTPATH}/_CHARTS.md -o {OUTPATH}/_CHARTS.docx
-    # !zip _CHARTS.zip -qq *.png 
