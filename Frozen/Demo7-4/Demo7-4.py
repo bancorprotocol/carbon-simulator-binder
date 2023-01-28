@@ -82,7 +82,7 @@ DATAPATH = "../data"
 try:
     datafn_w()
 except:
-    datafn_w = DropdownManager(listdir(DATAPATH, ".pickle"), defaultval="BTC-COINS")
+    datafn_w = DropdownManager(listdir(DATAPATH, ".pickle"), defaultval="COINS-ETH")
     datafn_w()
 
 cols = tuple(pdcols(j(DATAPATH, f"{datafn_w.value}.pickle")))
