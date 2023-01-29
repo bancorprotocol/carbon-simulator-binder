@@ -4,7 +4,9 @@
 
 # Carbon Simulator for Binder
 
-_see [`FROZEN.md`][frozenmd] for a table of frozen Binder releases_
+_[**the lastest version of the flagship simulation Demo 7-4 is here**][latest74]; see [`FROZEN.md`][frozenmd] for the full table of frozen releases_
+
+[latest74]:https://mybinder.org/v2/gh/bancorprotocol/carbon-simulator-binder/latest_7_4?labpath=Frozen%2FDemo7-4%2FDemo7-4.ipynb
 
 [frozenmd]:https://github.com/bancorprotocol/carbon-simulator-binder/blob/main/FROZEN.md
 [![PyPI version](https://badge.fury.io/py/carbon-simulator.svg)](https://badge.fury.io/py/carbon-simulator)
