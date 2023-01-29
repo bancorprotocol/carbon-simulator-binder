@@ -19,6 +19,7 @@ from carbon.helpers import j, strategy, pdread, pdcols, fsave, listdir, Params, 
 from carbon.helpers.widgets import CheckboxManager, DropdownManager, PcSliderManager
 from carbon.helpers.simulation import run_sim, plot_sim, SIM_DEFAULT_PARAMS
 import pickle
+import datetime 
 
 plt.rcParams['figure.figsize'] = [12,6]
 plt_style('seaborn-v0_8-dark', 'seaborn-dark')
@@ -44,15 +45,6 @@ print_version(require="2.2.6")
 
 # ## Setup
 
-# +
-# remove at next update
-sim_params = SIM_DEFAULT_PARAMS.params
-sim_params["plotValueCsh"] = True
-
-import datetime 
-fname = lambda data, col: f"{datetime.datetime.now().strftime('%m%d-%H%M%S')}-{data}-{col.replace('/', '')}.png"
-# -
-
 # ### Type and destination of generated output
 #
 # If `OUTPATH` is `None`, output will not be saved, otherwise it will be saved to the indicated directory (use `"."` for current)
@@ -68,6 +60,9 @@ except:
          f"Clear files before each run": False,
         })
     output_w()
+
+fname = lambda data, col: f"{datetime.datetime.now().strftime('%m%d-%H%M%S')}-{data}-{col.replace('/', '')}.png"
+fname("DATA", "COL")
 
 # ### The source data collection (filename) and columns (data series)
 # Filename determines collection, eg `BTC-COINS`is a collection of coins with prices expressted in BTC, and `RAN-050-00` is sig=50% vol and mu=0% drift. If you change the top dropdown, use **Run All** to update the bottom dropdown allowing you to choose the pair. Check `invert` if you want inverse quotation, and choose `hf interpolate` and if you want to augment the path with random high frequency data of the same overall volatility.
@@ -117,11 +112,26 @@ except:
 
 # ### Elements to show on the chart
 
+sim_defaults = {
+    'plotPrice': True,
+    'plotValueCsh': True,
+    'plotValueRsk': False,
+    'plotValueTotal': True,
+    'plotValueHODL': True,
+    'plotRanges': True,
+    'plotMargP': True,
+    'plotBid': True,
+    'plotAsk': True,
+    'plotInterpolated': True
+}
+
 try: 
     params_w()
 except:
-    params_w = CheckboxManager.from_idvdct(sim_params)
+    params_w = CheckboxManager.from_idvdct(sim_defaults)
     params_w()
+
+SIM_DEFAULT_PARAMS.params
 
 # ### Time period
 #
