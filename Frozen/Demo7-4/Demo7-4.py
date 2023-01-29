@@ -14,20 +14,32 @@
 # ---
 
 # +
+# # %%capture
+# # %pip install carbon-simulator
+# # %pip install ipywidgets
+
+# + tags=[]
 from carbon.helpers.stdimports import *
 from carbon.helpers import j, strategy, pdread, pdcols, fsave, listdir, Params, PathInterpolation as PI
+from carbon.helpers import require_version
 from carbon.helpers.widgets import CheckboxManager, DropdownManager, PcSliderManager
-from carbon.helpers.simulation import run_sim, plot_sim, SIM_DEFAULT_PARAMS
+try:
+    from simulation import run_sim, plot_sim, SIM_DEFAULT_PARAMS, COLORS, __VERSION__ as simversion
+    from carbon.helpers.simulation import __VERSION__ as csimversion
+    print(f"Using local copy of the simulation library [v{simversion}; Carbon: v{csimversion}]")
+except:
+    from carbon.helpers.simulation import run_sim, plot_sim, SIM_DEFAULT_PARAMS, COLORS, __VERSION__ as simversion
+    print(f"Using simulation library in Carbon [v{simversion}]")
 import pickle
 import datetime 
 
 plt.rcParams['figure.figsize'] = [12,6]
 plt_style('seaborn-v0_8-dark', 'seaborn-dark')
-print_version(require="2.2.6")
+print_version(require="2.3")
 # -
 
 # # Carbon Simulation - Demo 7-4 
-# _[frozen_20230128][frozen]: **this** notebook on [Binder][frozen_nb] and on [github][frozen_gh];  **latest** notebook on [Binder][latest_nb] and on [github][latest_gh]_
+# **Latest** notebook on [Binder][latest_nb] and on [github][latest_gh]
 #
 # Use **Run -- Run All Cells** in the menu above to run the notebook, then adjust the simulation parameters using the widgets provided. 
 #
@@ -45,7 +57,7 @@ print_version(require="2.2.6")
 
 # ## Setup
 
-# ### Type and destination of generated output
+# ### Generated output
 #
 # If `OUTPATH` is `None`, output will not be saved, otherwise it will be saved to the indicated directory (use `"."` for current)
 
@@ -64,8 +76,9 @@ except:
 fname = lambda data, col: f"{datetime.datetime.now().strftime('%m%d-%H%M%S')}-{data}-{col.replace('/', '')}.png"
 fname("DATA", "COL")
 
-# ### The source data collection (filename) and columns (data series)
-# Filename determines collection, eg `BTC-COINS`is a collection of coins with prices expressted in BTC, and `RAN-050-00` is sig=50% vol and mu=0% drift. If you change the top dropdown, use **Run All** to update the bottom dropdown allowing you to choose the pair. Check `invert` if you want inverse quotation, and choose `hf interpolate` and if you want to augment the path with random high frequency data of the same overall volatility.
+# ### Source data selection
+#
+# Filename determines **collection**, eg `BTC-COINS`is a collection of coins with prices expressted in BTC, and `RAN-050-00` is sig=50% vol and mu=0% drift. If you change the top dropdown, use **Run All** to update the bottom dropdown allowing you to choose the **pair**. Check `invert` if you want inverse quotation, and choose `hf interpolate` and if you want to augment the path with random high frequency data of the same overall volatility.
 
 DATAPATH = "../data"
 try:
@@ -77,7 +90,7 @@ except:
 cols = tuple(pdcols(j(DATAPATH, f"{datafn_w.value}.pickle")))
 try:
     assert datafn_w.value == old_datafn_w_value
-    datacols_w1()
+    datacols_w()
 except:
     old_datafn_w_value = datafn_w.value
     datacols_w = DropdownManager(cols, defaultval="BTC/ETH" if datafn_w.value=="COINS-ETH" else None)
@@ -106,32 +119,44 @@ strats = {
 try:
     strats_w()
 except:
-    strats_w = CheckboxManager(strats.keys(), values=True)
-    #strats_w = CheckboxManager(strats.keys(), values=[1,0,0,0,0,0])
+    #strats_w = CheckboxManager(strats.keys(), values=True)
+    strats_w = CheckboxManager(strats.keys(), values=[1]*(len(strats)-1)+[0])
     strats_w()
 
-# ### Elements to show on the chart
+# ### Chart elements and look
+
+colors = {
+    'bidFill': 'lightgreen',
+    'askFill': 'lightcoral',
+    'bid': 'green',
+    'ask': 'red',
+    'price': 'darkorange',
+    'hodl': 'cyan',
+    'value': ('blue', 'silver'),
+    'valuehf': ('royalblue', 'silver')
+}
 
 sim_defaults = {
     'plotPrice': True,
     'plotValueCsh': True,
     'plotValueRsk': False,
     'plotValueTotal': True,
-    'plotValueHODL': True,
+    'plotValueGrey': False,
+    'plotValueHODL': False,
     'plotRanges': True,
     'plotMargP': True,
     'plotBid': True,
     'plotAsk': True,
+    "plotDark": False,
     'plotInterpolated': True
 }
+plt_styles = (('seaborn-v0_8-dark', 'seaborn-dark'), ('dark_background',)*2)
 
 try: 
     params_w()
 except:
     params_w = CheckboxManager.from_idvdct(sim_defaults)
     params_w()
-
-SIM_DEFAULT_PARAMS.params
 
 # ### Time period
 #
@@ -144,7 +169,7 @@ except:
     segment_w = PcSliderManager(["Start date %", "Length %"], values=[0,1])
     segment_w(vertical=True)
 
-# ### All strategies
+# ### Strategy fine tuning
 #
 #  The parameter `csh` is the initial cash percentage of the portfolio (100%=all cash), and it total cash value is `TVL`. The slider `shift` allows shifting _all_ strategies up or down (eg, 5 is 5% up)
 
@@ -159,14 +184,24 @@ except:
 #
 # This is the strategy called `slider`. Here `m` is the mid price of the range (adjust `S0`, `SMIN`, `SMAX` to change), `g%` is the gap between the ranges in percent, and `w%` is the width of the ranges in percent. The parameter `u%` is the range utilisation rate, where `u=0%` means the range is full, and `u~100%` means that it is almost empty.
 
-try:
-    strat1_w(vertical=True)
-except:
-    S0, SMIN, SMAX = 100, 50, 200
-    strat1_w = PcSliderManager(["m", "g%", "w%", "u%"], 
-                        values=[S0/100, 0.1, 0.25, 0], 
-                        range=[(SMIN/100,SMAX/100),(0,0.50),(0,0.50),(0,1)])
-    strat1_w(vertical=True)
+if require_version("2.3.1", raiseonfail=False):
+    try:
+        strat1_w(vertical=True)
+    except:
+        S0, SMIN, SMAX = 100, 50, 200
+        strat1_w = PcSliderManager(["m", "g%", "w%", "ubid%", "uask%"], 
+                            values=[S0/100, 0.1, 0.25, 0, 0], 
+                            range=[(SMIN/100,SMAX/100),(0,0.50),(0,0.50),(0,1),(0,1)])
+        strat1_w(vertical=True)
+else:
+    try:
+        strat1_w(vertical=True)
+    except:
+        S0, SMIN, SMAX = 100, 50, 200
+        strat1_w = PcSliderManager(["m", "g%", "w%", "u%"], 
+                            values=[S0/100, 0.1, 0.25, 0], 
+                            range=[(SMIN/100,SMAX/100),(0,0.50),(0,0.50),(0,1)])
+        strat1_w(vertical=True)
 
 # ## Simulation
 
@@ -175,22 +210,30 @@ if output_w.values[3]:
     # !rm {OUTPATH}/*.data
     # !rm {OUTPATH}/_CHARTS.*
 
+# ### Charts
+
+_ = plt_style(*plt_styles[1]) if params_w.values_dct["plotDark"] else plt_style(*plt_styles[0])
 DATAID, DATAFN = datafn_w.value, j(DATAPATH, f"{datafn_w.value}.pickle") 
 STARTPC, LENPC, SV, COLNM = segment_w.values[0], segment_w.values[1], strat1_w.values, datacols_w.value
 path0, pair = pdread(DATAFN, COLNM, from_pc=STARTPC, period_pc=LENPC, min_dt=PATH_MIN_DATE, invert=pathops_w.values[0], tkns=True)
 path = PI.interpolate(path0, PIPERIOD, sigfctr=PIFACTOR, enable=pathops_w.values[1])
-strats["slider"] = [strategy.from_mgw(m=100*SV[0], g=SV[1], w=SV[2], u=SV[3])]
+try:
+    strats["slider"] = [strategy.from_mgw(m=100*SV[0], g=SV[1], w=SV[2], u=(SV[4], SV[3]))]
+except:
+    strats["slider"] = [strategy.from_mgw(m=100*SV[0], g=SV[1], w=SV[2], u=SV[3])]
 for ix, stratid in enumerate(strats_w.checked):
     strat = [s.set_tvl(spot=path0[0], cashpc=stratall_w.values[0], tvl=TVL) for s in strats[stratid]]
     simresults  = run_sim(strat, path, shift=stratall_w.values[1])
     simresults0 = run_sim(strat, path0, shift=stratall_w.values[1]) if not path is path0 else simresults
     v0, v1, v1a = simresults.value_r[0], simresults.value_r[-1], simresults0.value_r[-1]
     print(f"TVL0={v0:.1f}, TVL1_hf={v1:.1f} ({v1/v0*100-100:.1f}%) TVL1_lf={v1a:.1f} ({v1a/v0*100-100:.1f}%)")
-    plot_sim(simresults, simresults0, f"{DATAID}:{COLNM}", Params(**params_w.values_dct), pair=pair)
+    plot_sim(simresults, simresults0, f"{DATAID}:{COLNM}", Params(**params_w.values_dct), pair=pair, colors=colors)
     if isinstance(OUTPATH, str):
         plt.savefig(j(OUTPATH, fname(DATAID, COLNM)))
         fsave(pickle.dumps((simresults, simresults0)), f"{fname(DATAID, COLNM)}.data", OUTPATH, binary=True)
     plt.show()
+
+# ### Directory listing
 
 # Provide the corresponding box above (_"Show target directory listing"_) is checked, this will create a list of all `png` files generated throughout your analysis. Those files will only be generated is the box _"Save output to target directory"_ box is checked. The target directory is preset to the directory of this notebook, but you can change this in the code above. Keep in minds that if you run this analysis **on Binder, you have to download all files you want to keep before the server is destroyed.**
 
@@ -200,6 +243,8 @@ if OUTPATH and output_w.values[1]:
 
 # Provide the corresponding box above (_"Generate docx & zip from charts"_) is checked, this will create a Word `docx` file embedding all the `png` files
 
+# ### Create zip and docx
+
 if OUTPATH and output_w.values[2]:
     print("Creating consolidated docx and zip from charts and data [uncheck box at top to disable]")
     markdown = "\n\n".join(f"![]({OUTPATH}/{fn})" for fn in [fn for fn in os.listdir(OUTPATH) if fn[-4:]==".png"])
@@ -208,4 +253,5 @@ if OUTPATH and output_w.values[2]:
     fsave(markdown, "_CHARTS.md", OUTPATH, quiet=True)
     # !pandoc {OUTPATH}/_CHARTS.md -o {OUTPATH}/_CHARTS.docx
 
+# + tags=[]
 
