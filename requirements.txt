@@ -3,3 +3,5 @@ numpy
 matplotlib
 pandas
 tabulate
+openpyxl
+requests
